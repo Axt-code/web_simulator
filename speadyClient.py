@@ -136,20 +136,25 @@ def send_http_request(host, port, path):
     print("Number of img_tags : "+ str(len(img_tags)))
     if len(img_tags)!=0:
          for img in img_tags:
+            #extracts the 'src' attribute from the image tags
             img_src = img['src']
+             #it is used to append those attributes to the object_tags
             object_tags.append(img_src)
             
     else:
         print("No img tags found on the web page.")
         print()
            
-    # handle link
+    #This line uses BeautifulSoup to find all <a> (anchor) tags and stores in the link_tags
     link_tags = soup.find_all("a")
     print("Number of link_tags : "+ str(len(link_tags)))
+    #creates a BeautifulSoup object  from the response_text using the 'html.parser' parser
     soup = BeautifulSoup(response_text, 'html.parser')
+    #It  retrives the text from the soup
     text = soup.get_text
+    #printing the text which is extracted 
     print(f"text : {text}")
-    # print(body)
+   
     
     object_tags=[]
     # handle image
@@ -167,11 +172,12 @@ def send_http_request(host, port, path):
     # handle link
     link_tags = soup.find_all("a")
     print("Number of link_tags : "+ str(len(link_tags))) 
+    ##creates a BeautifulSoup object  from the response_text using the 'html.parser' parser
     soup = BeautifulSoup(response_text, 'html.parser')
     text = soup.get_text
     print(f"text : {text}")
-    # print(body)
-    
+  
+    # list will be used to store the URLs of objects found in the HTML content
     object_tags=[]
     # handle image
     img_tags =soup.find_all("img")
