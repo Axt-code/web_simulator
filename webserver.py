@@ -3,15 +3,19 @@ import threading
 import os
 
 def handle_client(client_socket):
+    #It is used to receive the data from the server and decoding the data
     request_data = client_socket.recv(1024).decode('utf-8')
     
     # Extract the requested file path from the HTTP request
     request_lines = request_data.split('\n')
+    # the request line containing information like the URL path, and the HTTP version.
     request_line = request_lines[0]
+    #splitting the request line 
     parts = request_line.split()
     if len(parts) > 1:
         file_path = parts[1]
     else:
+        # closing the client socket 
         client_socket.close()
         response = "HTTP/1.1 400 Bad Request\r\n\r\n<h1>Bad Request<h1>"
         return
