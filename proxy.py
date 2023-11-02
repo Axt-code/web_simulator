@@ -1,12 +1,19 @@
+# /*
+# 1. correct the way I am extracting port and ip address
+# 2. see what is the problem in downloading image and script file.  done
+# */
+
+
 import socket
 import threading
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import ssl
+import subprocess
 
 # Define the proxy's listening address and port
 proxy_host = '0.0.0.0'  # Listen on all available interfaces
-proxy_port = 8080
+proxy_port = 8090
 
 def handle_client(client_socket):
     request = client_socket.recv(4096).decode('utf-8')
@@ -14,39 +21,46 @@ def handle_client(client_socket):
     # print("Request: "+ request)
     # Parse the request to extract the host and port
    # Parse the request to extract the host and port
-    request_lines = request.split('\n')
-    print(f"Request : {request:}")
-    print()
-    print(f"request_line 0: {request_lines[0]}")
-    print(f"request_line 1: {request_lines[1]}")
-    print(f"request_line 2: {request_lines[2]}")
-    first_line = request_lines[0].strip()
-    parts = first_line.split(' ')
-    # method = parts[0]
-    url = parts[1]
-    print(f"url: {url}")
-    parsed_url = urlparse(url)
-    print(f"parsed_url: {parsed_url}")
-    third_line = request_lines[2].strip()
-    parts2 = third_line.split(' ')
-    host = parts2[1].split(":")[0]
-    port = int(parts2[1].split(":")[1])
-    print(f"host: {host}, port: {port}")
+     # Extract the Host header from the request
+    headers = request.split("\r\n")
+    host_header = [header for header in headers if header.startswith("Host:")]
+        
+    if host_header:
+        host_port = host_header[0].split(": ")[1].split(":")
+        host = host_port[0]
+        port_str = host_port[1] if len(host_port) > 1 else 80  # Default to port 80 if no port is specified
+        
+    
+    if port_str:  # Check if port_str is a valid integer
+        port = int(port_str)
 
+        print(f"host: {host}")
+        print(f"port: {port}")
+    else:
+        print("Host header not found in the request.")
 
+    if host_header:
+        # Extract the hostname from the Host header
+        url = (host_header[0].split(" ")[1].split(":")[0])
+        
+    print(f"URL: {url}")
+        
     if not host:
         print("Error: Invalid URL")
         return
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
     if(port == 443):
             context = ssl.create_default_context()
             server_socket = context.wrap_socket(server_socket, server_hostname=host)
             
+            
     server_socket.connect((host, port))
     
-    request = f"GET {url} HTTP/1.1\r\nHost: {host}\r\n\r\n"
+    # requests = f"GET / HTTP/1.1\r\nHost: {host}:{port}\r\n\r\n"
+    
+    print(f"Reuest: {request}")
     
     # Send the request to the server or proxy
     server_socket.send(request.encode())
@@ -55,7 +69,7 @@ def handle_client(client_socket):
 
     byteResponse = b""
     
-    server_socket.settimeout(4)
+    server_socket.settimeout(20)
     
     try:
         while True:
@@ -68,6 +82,8 @@ def handle_client(client_socket):
         pass
     
     # print("outside loop")
+    
+    # print(f"byte_Response: {byteResponse}")
     
     server_socket.close()
     
@@ -84,14 +100,13 @@ def handle_client(client_socket):
         if status_code != b'200':
             error_message = f"Error: Received status code {status_code}"
             print(error_message)
+            print()
             # You can send an error response to the client here if needed
             client_socket.send(error_message.encode())
         
-    print(f"status code: {status_code.decode('utf-8')}")
+    print(f"status code: {status_code.decode('utf-8')}\n")
     # print(f"header_line: {header_lines}")
 
-    # Modify the response as needed
-    # modified_response = response.replace(b'example.com', b'your-proxy-host.com')
 
     # Send the modified response to the client
     client_socket.send(byteResponse)
@@ -104,7 +119,13 @@ def handle_client(client_socket):
 
 def main():
     # Create a listening socket
+    
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    
+    output = subprocess.check_output(["hostname", "-I"]).decode("utf-8").strip()
+    proxy_host = output.split()[0]
+    print(f"Proxy_host: {proxy_host}")
     server.bind((proxy_host, proxy_port))
     server.listen(5)
 
