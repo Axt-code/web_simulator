@@ -25,18 +25,15 @@ def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
         # Construct the HTTP GET request for the image
         parsed_url = urllib.parse.urlparse(obj_src)
         path = parsed_url.path if parsed_url.path else '/'
-        if proxy_host and proxy_port:
-           request =  f"GET {path} HTTP/1.1\r\nProxy_Host: {proxy_host}\r\n" + f"Host: {host}:{port}\r\n"
-        else:
-            request = f"GET {path} HTTP/1.1\r\nHost: {host}\r\n\r\n"
-        
-        
+      
+        request = f"GET {path} HTTP/1.1\r\nHost: {host}:{port}\r\n\r\n"
+            
         # Send the HTTP request
         client_socket.send(request.encode())
         
         response = b''
         
-        client_socket.settimeout(5)
+        client_socket.settimeout(30)
         
         try:        
             while True:
@@ -53,18 +50,24 @@ def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
         # Process the HTTP response
         response_parts = response.split(b'\r\n\r\n', 1)
         
+        print(f"length tof response_path: {len(response_parts)}")
+        
+        # print(f"Response: {response_parts}")
+        
+        obj_name = os.path.basename(parsed_url.path)
+        obj_path = os.path.join('objects', obj_name)
+                
+        
         if len(response_parts) == 2:
-            headers, image_data = response_parts
+            headers, obj_data = response_parts
             status_line, *header_lines = headers.decode('utf-8').split('\r\n')
             status_code = status_line.split()[1].encode('utf-8')
             
             if status_code == b'200':
-                obj_name = os.path.basename(parsed_url.path)
-                obj_path = os.path.join('objects', obj_name)
                 
                 # Save the image to a file
-                with open(obj_path , 'wb') as img_file:
-                    img_file.write(image_data)
+                with open(obj_path , 'wb') as obj_file:
+                    obj_file.write(obj_data)
                 
                 print(f"Object saved: {obj_name}")
                 print()
@@ -93,10 +96,7 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
         
     
     # Create an HTTP GET request
-    if proxy_host and proxy_port:
-       request = f"GET {path} HTTP/1.1\r\nProxy_Host: {proxy_host}\r\n" + f"Host: {host}:{port}\r\n"
-    else:
-       request = f"GET {path} HTTP/1.1\r\nHost: {host}\r\n\r\n"
+    request = f"GET {path} HTTP/1.1\r\nHost: {host}:{port}\r\n\r\n"
     
     
     # Send the request to the server or proxy
@@ -106,7 +106,7 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
     # Receive and print the response
     byteResponse = b""
     
-    client_socket.settimeout(10)
+    client_socket.settimeout(30)
     
     try:
         while True:
