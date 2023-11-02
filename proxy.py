@@ -1,8 +1,3 @@
-# /*
-# 1. correct the way I am extracting port and ip address
-# 2. see what is the problem in downloading image and script file.  done
-# */
-
 
 import socket
 import threading
@@ -12,16 +7,23 @@ import ssl
 import subprocess
 
 # Define the proxy's listening address and port
-proxy_host = '0.0.0.0'  # Listen on all available interfaces
+output = subprocess.check_output(["hostname", "-I"]).decode("utf-8").strip()
+proxy_host = output.split()[0]
 proxy_port = 8090
 
+
+def modify_header(header, status_code):
+    # Add the additional lines to the header
+    header += "\r\n"
+    header += f"Proxy host: {proxy_host}"
+
+    return header
+        
 def handle_client(client_socket):
     request = client_socket.recv(4096).decode('utf-8')
 
-    # print("Request: "+ request)
-    # Parse the request to extract the host and port
-   # Parse the request to extract the host and port
-     # Extract the Host header from the request
+    print("Request: "+ request)
+
     headers = request.split("\r\n")
     host_header = [header for header in headers if header.startswith("Host:")]
         
@@ -33,7 +35,6 @@ def handle_client(client_socket):
     
     if port_str:  # Check if port_str is a valid integer
         port = int(port_str)
-
         print(f"host: {host}")
         print(f"port: {port}")
     else:
@@ -58,10 +59,6 @@ def handle_client(client_socket):
             
     server_socket.connect((host, port))
     
-    # requests = f"GET / HTTP/1.1\r\nHost: {host}:{port}\r\n\r\n"
-    
-    print(f"Reuest: {request}")
-    
     # Send the request to the server or proxy
     server_socket.send(request.encode())
     
@@ -74,22 +71,21 @@ def handle_client(client_socket):
     try:
         while True:
             response_chunk = server_socket.recv(4096)
-            # print("inside loop")
             if not response_chunk:
                 break
             byteResponse += response_chunk
     except:
         pass
     
-    # print("outside loop")
     
-    # print(f"byte_Response: {byteResponse}")
+    print("Closing Connection with server")
+    print()
     
     server_socket.close()
     
     
      # Process the HTTP response
-    response_parts = byteResponse.split(b'\r\n\r\n', 1)
+    response_parts = byteResponse.split(b'\r\n\r\n')
     
     status_code=""
     
@@ -101,18 +97,25 @@ def handle_client(client_socket):
             error_message = f"Error: Received status code {status_code}"
             print(error_message)
             print()
-            # You can send an error response to the client here if needed
             client_socket.send(error_message.encode())
-        
+            
     print(f"status code: {status_code.decode('utf-8')}\n")
-    # print(f"header_line: {header_lines}")
+    
+    # modified_headers = modify_header(headers.decode('utf-8'), status_code.decode('utf-8'))
 
+    # print(f"Modified header: {modified_headers}")
+ 
+    # Create the modified response by combining the modified headers and the original script_data
+    # modified_response = f"{modified_headers}\r\n{script_data.decode('utf-8')}"
+    # print(modified_response.encode('utf-8'))
 
-    # Send the modified response to the client
+    # Send the modified response to the client as bytes
     client_socket.send(byteResponse)
         
     
-
+    print("Closing Connection with client")
+    print()
+    
     # Close both sockets
     client_socket.close()
 
@@ -122,9 +125,6 @@ def main():
     
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    
-    output = subprocess.check_output(["hostname", "-I"]).decode("utf-8").strip()
-    proxy_host = output.split()[0]
     print(f"Proxy_host: {proxy_host}")
     server.bind((proxy_host, proxy_port))
     server.listen(5)
@@ -139,3 +139,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
+    
+    
+
+
