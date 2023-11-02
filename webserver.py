@@ -1,21 +1,18 @@
 import socket
 import threading
 import os
+import subprocess
 
 def handle_client(client_socket):
-    #It is used to receive the data from the server and decoding the data
     request_data = client_socket.recv(1024).decode('utf-8')
     
     # Extract the requested file path from the HTTP request
     request_lines = request_data.split('\n')
-    # the request line containing information like the URL path, and the HTTP version.
     request_line = request_lines[0]
-    #splitting the request line 
     parts = request_line.split()
     if len(parts) > 1:
         file_path = parts[1]
     else:
-        # closing the client socket 
         client_socket.close()
         response = "HTTP/1.1 400 Bad Request\r\n\r\n<h1>Bad Request<h1>"
         return
@@ -42,10 +39,13 @@ def handle_client(client_socket):
     
 
 def main():
-    host = "0.0.0.0"  # Listen on all available network interfaces
+
     port = 6789
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    output = subprocess.check_output(["hostname", "-I"]).decode("utf-8").strip()
+    host = output.split()[0]
+    print(f"Proxy_host: {host}")
     server.bind((host, port))
     server.listen(5)  # Listen for up to 5 client connections
 
