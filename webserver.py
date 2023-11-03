@@ -16,7 +16,7 @@ def handle_client(client_socket):
         client_socket.close()
         response = "HTTP/1.1 400 Bad Request\r\n\r\n<h1>Bad Request<h1>"
         return
-    print(f'print file path: {file_path}')
+    print(f'Requested file path: {file_path}')
     
       # Map the requested path to the local file system
     root_dir = '.'
@@ -34,6 +34,7 @@ def handle_client(client_socket):
 
     # Send the response back to the client
     client_socket.sendall(response.encode())
+    print("\nRequest complete \n\nClosing connection with client.")
     client_socket.close()
     
     
@@ -45,16 +46,16 @@ def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     output = subprocess.check_output(["hostname", "-I"]).decode("utf-8").strip()
     host = output.split()[0]
-    print(f"Proxy_host: {host}")
     server.bind((host, port))
     server.listen(5)  # Listen for up to 5 client connections
 
-    print(f"[*] Listening on {host}:{port}")
+    print(f"Listening on {host}:{port}")
 
+    no_of_client=0
     while True:
         client, addr = server.accept()
-        print(f"[*] Accepted connection from client {addr[0]}:{addr[1]}")
-        
+        no_of_client+=1
+        print(f"Accepted connection from client {no_of_client} ===  {addr[0]}:{addr[1]}")
         # Create a new thread to handle the client
         client_handler = threading.Thread(target=handle_client, args=(client,))
         client_handler.start()
