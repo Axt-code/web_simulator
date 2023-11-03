@@ -50,10 +50,6 @@ def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
         # Process the HTTP response
         response_parts = response.split(b'\r\n\r\n', 1)
         
-        # print(f"length tof response_path: {len(response_parts)}")
-        
-        # print(f"Response: {response_parts}")
-        
         obj_name = os.path.basename(parsed_url.path)
         obj_path = os.path.join('objects', obj_name)
                 
@@ -120,9 +116,9 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
     
     response_text = byteResponse.decode()
     
-    soup = BeautifulSoup(response_text, 'html.parser')
-    text = soup.get_text
-    # print(f"text : {text}")
+    basehtml = BeautifulSoup(response_text, 'html.parser')
+    title = basehtml.title
+    print(f"\nTitle : {title}\n")
    
     
       # Process the HTTP response
@@ -131,12 +127,11 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
     headers =""
     if len(response_parts) == 2:
         headers, script_data = response_parts
-        # print(f"header: {headers}")
         
-    print("Header : " + headers.decode('utf-8')+"\n")
+    print("Header : \n" + headers.decode('utf-8')+"\n")
     
     # handle image
-    img_tags =soup.find_all("img")
+    img_tags =basehtml.find_all("img")
     print("Number of img_tags : "+ str(len(img_tags)))
     if len(img_tags)!=0:
          for img in img_tags:
@@ -150,7 +145,7 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
         print()
            
     # handle link
-    link_tags = soup.find_all("a")
+    link_tags = basehtml.find_all("a")
     print("Number of link_tags : "+ str(len(link_tags)))
     if len(link_tags)!=0:
          for link in link_tags:
@@ -158,7 +153,7 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
              print()
    
     # handle script
-    script_tags = soup.find_all("script")
+    script_tags = basehtml.find_all("script")
     print("Number of script_tags: "+ str(len(script_tags)))
     if len(script_tags) != 0:
         for script in script_tags:
@@ -177,7 +172,7 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
        
    
    # handle icon
-    icon_tags =soup.find_all("link", rel="shortcut icon") or soup.find_all("link", rel="icon")
+    icon_tags =basehtml.find_all("link", rel="shortcut icon") or basehtml.find_all("link", rel="icon")
     print("Number of icon_tags : "+ str(len(icon_tags)))
     if len(icon_tags)!=0:
          for icon in icon_tags:
