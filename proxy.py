@@ -101,16 +101,16 @@ def handle_client(client_socket):
             
     print(f"status code: {status_code.decode('utf-8')}\n")
     
-    # modified_headers = modify_header(headers.decode('utf-8'), status_code.decode('utf-8'))
+    modified_headers = modify_header(headers.decode('utf-8'), status_code.decode('utf-8'))
 
-    # print(f"Modified header: {modified_headers}")
+    print(f"Modified header: {modified_headers}")
  
     # Create the modified response by combining the modified headers and the original script_data
-    # modified_response = f"{modified_headers}\r\n{script_data.decode('utf-8')}"
+    modified_response = f"{modified_headers}\r\n\r\n{script_data}"
     # print(modified_response.encode('utf-8'))
 
     # Send the modified response to the client as bytes
-    client_socket.send(byteResponse)
+    client_socket.send( modified_response.encode())
         
     
     print("Closing Connection with client")
@@ -140,7 +140,3 @@ def main():
 if __name__ == '__main__':
     main()
     
-    
-    
-
-
