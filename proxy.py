@@ -12,7 +12,7 @@ proxy_host = output.split()[0]
 proxy_port = 8090
 
 
-def modify_header(header, status_code):
+def modify_header(header):
     # Add the additional lines to the header
     header += "\r\n"
     header += f"Proxy host: {proxy_host}"
@@ -33,22 +33,15 @@ def handle_client(client_socket):
         port_str = host_port[1] if len(host_port) > 1 else 80  # Default to port 80 if no port is specified
         
     
-    if port_str:  # Check if port_str is a valid integer
+    if port_str:
         port = int(port_str)
-        print(f"host: {host}")
-        print(f"port: {port}")
-    else:
-        print("Host header not found in the request.")
 
-    if host_header:
-        # Extract the hostname from the Host header
-        url = (host_header[0].split(" ")[1].split(":")[0])
+    else:
+        print("\nHost header not found in the request.\n")
         
-    print(f"URL: {url}")
-        
-    if not host:
-        print("Error: Invalid URL")
-        return
+    # if not host:
+    #     print("\nError: Invalid URL\n")
+    #     return
     
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
@@ -62,7 +55,7 @@ def handle_client(client_socket):
     # Send the request to the server or proxy
     server_socket.send(request.encode())
     
-    print("Request send")
+    print("\nRequest send\n")
 
     byteResponse = b""
     
@@ -78,11 +71,9 @@ def handle_client(client_socket):
         pass
     
     
-    print("Closing Connection with server")
-    print()
+    print("\nResponse receiver from server\nClosing Connection with server\n")
     
     server_socket.close()
-    
     
      # Process the HTTP response
     response_parts = byteResponse.split(b'\r\n\r\n')
@@ -94,27 +85,27 @@ def handle_client(client_socket):
         status_line, *header_lines = headers.decode('utf-8').split('\r\n')
         status_code = status_line.split()[1].encode('utf-8')
         if status_code != b'200':
-            error_message = f"Error: Received status code {status_code}"
+            error_message = f"Error: Received status code {status_code.decode()}"
             print(error_message)
             print()
             client_socket.send(error_message.encode())
+   
             
-    print(f"status code: {status_code.decode('utf-8')}\n")
-    
-    modified_headers = modify_header(headers.decode('utf-8'), status_code.decode('utf-8'))
+        print(f"status code: {status_code.decode()}\n")
 
-    print(f"Modified header: {modified_headers}")
- 
-    # Create the modified response by combining the modified headers and the original script_data
-    modified_response = f"{modified_headers}\r\n\r\n{script_data}"
-    # print(modified_response.encode('utf-8'))
+        modified_headers = modify_header(headers.decode('utf-8'))
+        print(f"Modified header: {modified_headers}")  
+        modified_headers = modified_headers.encode()
 
-    # Send the modified response to the client as bytes
-    client_socket.send( modified_response.encode())
+        modified_response = modified_headers + b"\r\n\r\n" + script_data
         
-    
-    print("Closing Connection with client")
-    print()
+        # Send the modified response to the client as bytes
+        client_socket.send(modified_response)
+            
+        
+        print("\nForwarded data to client\nClosing Connection with client\n")
+    else:
+        print("\nError: Length of response is not 2\n")
     
     # Close both sockets
     client_socket.close()
@@ -125,18 +116,22 @@ def main():
     
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    print(f"Proxy_host: {proxy_host}")
     server.bind((proxy_host, proxy_port))
     server.listen(5)
 
-    print(f"[*] Listening on {proxy_host}:{proxy_port}")
-
+    print(f"Listening on {proxy_host}:{proxy_port}")
+    no_of_client = 0
     while True:
         client_socket, addr = server.accept()
-        print(f"[*] Accepted connection from {addr[0]}:{addr[1]}")
+        no_of_client+=1
+        print(f"[*] Accepted connection from client  {no_of_client} === {addr[0]}:{addr[1]}\n")
         client_handler = threading.Thread(target=handle_client, args=(client_socket,))
         client_handler.start()
 
 if __name__ == '__main__':
     main()
     
+    
+    
+
+
