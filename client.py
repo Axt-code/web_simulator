@@ -50,7 +50,7 @@ def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
         # Process the HTTP response
         response_parts = response.split(b'\r\n\r\n', 1)
         
-        print(f"length tof response_path: {len(response_parts)}")
+        # print(f"length tof response_path: {len(response_parts)}")
         
         # print(f"Response: {response_parts}")
         
@@ -97,8 +97,7 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
     
     # Create an HTTP GET request
     request = f"GET {path} HTTP/1.1\r\nHost: {host}:{port}\r\n\r\n"
-    
-    
+        
     # Send the request to the server or proxy
     print(f"Sending HTTP request to {host}:{port}")
     client_socket.send(request.encode())
@@ -111,7 +110,6 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
     try:
         while True:
             response_chunk = client_socket.recv(4096)
-            # print("inside loop")
             if not response_chunk:
                 break
             byteResponse += response_chunk
@@ -124,9 +122,18 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
     
     soup = BeautifulSoup(response_text, 'html.parser')
     text = soup.get_text
-    print(f"text : {text}")
-    # print(body)
+    # print(f"text : {text}")
+   
     
+      # Process the HTTP response
+    response_parts = byteResponse.split(b'\r\n\r\n')
+    
+    headers =""
+    if len(response_parts) == 2:
+        headers, script_data = response_parts
+        # print(f"header: {headers}")
+        
+    print("Header : " + headers.decode('utf-8')+"\n")
     
     # handle image
     img_tags =soup.find_all("img")
@@ -171,13 +178,10 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
    
    # handle icon
     icon_tags =soup.find_all("link", rel="shortcut icon") or soup.find_all("link", rel="icon")
-
     print("Number of icon_tags : "+ str(len(icon_tags)))
     if len(icon_tags)!=0:
          for icon in icon_tags:
-            # Get the source (src) attribute of the img tag
             icon_src = icon.get('href')
-            # img_name = os.path.basename(img_src)
             obj_get(host, port, icon_src, proxy_host, proxy_port)
             print()
             
@@ -189,14 +193,10 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
 
 def main():
     
-    print("Give arguments as: python web_client.py <host> <port> <path> [<proxy_host> <proxy_port>]")
-    print()
-    
     if len(sys.argv) < 4:
         print("Give arguments as: python web_client.py <host> <port> <path> [<proxy_host> <proxy_port>]")
         sys.exit(1)
 
-    # print(f"Length od arguments: {len(sys.argv)}")
     host = sys.argv[1]
     port = int(sys.argv[2])
     path = sys.argv[3]
