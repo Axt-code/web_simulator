@@ -1,12 +1,12 @@
-import socket
-import sys
-from bs4 import BeautifulSoup
-import ssl
-import os
-import urllib.parse
-from concurrent.futures import ThreadPoolExecutor
-import requests
-import time
+import socket # imports the Python socket module
+import sys # imports the sys module
+from bs4 import BeautifulSoup #imports the BeautifulSoup class from the bs4 module
+import ssl # imports the ssl module, which provides tools for working with SSL/TLS encryption
+import os # imports the os module, which provides a way to interact with the operating system
+import urllib.parse #imports the urllib.parse module, which contains functions for parsing and manipulating URLs
+from concurrent.futures import ThreadPoolExecutor # imports the ThreadPoolExecutor class from the concurrent.futures module
+import requests #imports the requests library, which is a popular library for making HTTP requests and working with web resources
+import time #imports the time module, which provides functions for measuring time and adding delays in code
 
 
 #fetch_obj is a function which takes host,part no,url of the website
