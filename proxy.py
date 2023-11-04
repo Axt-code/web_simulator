@@ -1,13 +1,13 @@
+import socket # Library for using socket in python
+import threading # Library for using multithreading
+from urllib.parse import urlparse # imports the urlparse function from the urllib.parse module
+from bs4 import BeautifulSoup #imports the BeautifulSoup class from the bs4 module
+import ssl # imports the ssl module, which provides tools for working with SSL/TLS encryption
+import subprocess #imports the subprocess
 
-import socket
-import threading
-from urllib.parse import urlparse
-from bs4 import BeautifulSoup
-import ssl
-import subprocess
-
-# Define the proxy's listening address and port
+# Define the proxy's listening address and port and decoding the output
 output = subprocess.check_output(["hostname", "-I"]).decode("utf-8").strip()
+#Splitting teh output and oth index value stored in proxy_host
 proxy_host = output.split()[0]
 proxy_port = 8090
 
@@ -20,10 +20,11 @@ def modify_header(header):
     return header
         
 def handle_client(client_socket):
+    # recieving the response with 4096 Bytes and parallely decoding
     request = client_socket.recv(4096).decode('utf-8')
 
     print("Request: "+ request)
-
+    
     headers = request.split("\r\n")
     host_header = [header for header in headers if header.startswith("Host:")]
         
