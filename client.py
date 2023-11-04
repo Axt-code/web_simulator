@@ -1,10 +1,10 @@
-import socket
-import sys
-from bs4 import BeautifulSoup
-import ssl
-import os
-import urllib.parse
-import time
+import socket # imports the Python socket module
+import sys # imports the sys module
+from bs4 import BeautifulSoup #imports the BeautifulSoup class from the bs4 module
+import ssl # imports the ssl module, which provides tools for working with SSL/TLS encryption
+import os # imports the os module
+import urllib.parse #imports the urllib.parse module, which contains functions for parsing and manipulating URLs
+import time #  imports the ThreadPoolExecutor class from the concurrent.futures module
 
 def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
     try:
@@ -13,33 +13,39 @@ def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
         
         if proxy_host and proxy_port:
             print(f"Connecting to the proxy at {proxy_host}:{proxy_port}")
+            # establishes a connection to the server specified by the host and port
             client_socket.connect((proxy_host, proxy_port))
         else:
             print(f"Connecting directly to the web server at {host}:{port}")
+             # establishes a connection to the server specified by the host and port
             client_socket.connect((host, port))
             
         if(port == 443 and proxy_host==None):
+            # line creates an SSL context using the ssl module
             context = ssl.create_default_context()
+            # wraps the existing client_socket with SSL/TLS encryption using the SSL context created IN PREVIOUS STEP
             client_socket = context.wrap_socket(client_socket, server_hostname=host)
             
-        # Construct the HTTP GET request for the image
+        # parses the URL provided in obj_src using the urllib.parse.urlparse function
         parsed_url = urllib.parse.urlparse(obj_src)
         path = parsed_url.path if parsed_url.path else '/'
       
         request = f"GET {path} HTTP/1.1\r\nHost: {host}:{port}\r\n\r\n"
             
-        # Send the HTTP request
+        # Send the HTTP request by encoding the message
         client_socket.send(request.encode())
         
         response = b''
-        
+        #setting the timeout with 30 seconds for recieving the data from the server
         client_socket.settimeout(30)
         
         try:        
             while True:
+                #recieving the response with 4096 Bytes and storing the message in the data variable
                 data = client_socket.recv(4096)
                 if not data:
                     break
+                #ata is received, this line appends the received data to the response variable
                 response += data
         except:
             pass
@@ -47,16 +53,18 @@ def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
         # Close the client socket
         client_socket.close()
         
-        # Process the HTTP response
+        # Process the HTTP response by splitting the responses
         response_parts = response.split(b'\r\n\r\n', 1)
-        
+        #unction to extract the filename from the path and stored in obj_name
         obj_name = os.path.basename(parsed_url.path)
         obj_path = os.path.join('objects', obj_name)
                 
         
         if len(response_parts) == 2:
             headers, obj_data = response_parts
+            #decodes the headers and splits them
             status_line, *header_lines = headers.decode('utf-8').split('\r\n')
+            #extracts the status code and encode them
             status_code = status_line.split()[1].encode('utf-8')
             
             if status_code == b'200':
@@ -64,7 +72,6 @@ def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
                 # Save the image to a file
                 with open(obj_path , 'wb') as obj_file:
                     obj_file.write(obj_data)
-                
                 print(f"Object saved: {obj_name}")
                 print()
                 
@@ -79,15 +86,21 @@ def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
 def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
     if proxy_host:
         print(f"Connecting to the proxy at {proxy_host}:{proxy_port}")
+        #creating the socket whick is of type tcp(connection oriented)
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+         # establishes a connection to the server specified by the host and port
         client_socket.connect((proxy_host, proxy_port))
     else:
         print(f"Connecting directly to the web server at {host}:{port}")
+        #creating the socket whick is of type tcp(connection oriented)
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # establishes a connection to the server specified by the host and port
         client_socket.connect((host, port))
 
     if(port == 443 and proxy_host==None):
+        #  # line creates an SSL context using the ssl module
         context = ssl.create_default_context()
+         # wraps the existing client_socket with SSL/TLS encryption using the SSL context created IN PREVIOUS STEP
         client_socket = context.wrap_socket(client_socket, server_hostname=host)
         
     
