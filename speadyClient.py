@@ -9,33 +9,40 @@ import requests
 import time
 
 
-
+#fetch_obj is a function which takes host,part no,url of the website
 def fetch_obj(host, port, url):
+    #creating the socket whick is of type tcp(connection oriented)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # establishes a connection to the server specified by the host and port
     client_socket.connect((host, port))
-    
+     #443 is the port number of the HTTPS
     if(port == 443):
+         #it creates an SSL context
         context = ssl.create_default_context()
+        #Wrapping the socket for secure communication when connecting to an HTTPS server.
         client_socket = context.wrap_socket(client_socket, server_hostname=host)
         
     
     request = f"GET {url} HTTP/1.1\r\nHost: {host}\r\n\r\n"
     
     print(f"Sending HTTP parallel request to {host}:{port}")
+     #Client will send the request to the server by encoding the message
     client_socket.send(request.encode())
-    
+    # parses the url,It breaks down the URL into its components
     parsed_url = urllib.parse.urlparse(url)
     
     # Receive and print the response
     byteResponse = b""
-    
+     #setting the timeout with 10 seconds for recieving the data from the server
     client_socket.settimeout(10)
     
     try:
         while True:
+            #recieving the response with 4096 Bytes
             response_chunk = client_socket.recv(4096)
             if not response_chunk:
                 break
+            # It appends each received Response to the byteResponse variable.
             byteResponse += response_chunk
     except:
         pass
