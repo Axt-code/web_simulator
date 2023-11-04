@@ -1,7 +1,7 @@
-import socket
-import threading
-import os
-import subprocess
+import socket  # imports the Python socket module
+import threading # Library for using multithreading
+import os # import statement that brings the os module into your script
+import subprocess #imports the subprocess
 
 def handle_client(client_socket):
     request_data = client_socket.recv(1024).decode('utf-8')
@@ -35,6 +35,7 @@ def handle_client(client_socket):
     # Send the response back to the client
     client_socket.sendall(response.encode())
     print("\nRequest complete \n\nClosing connection with client.")
+    #Closing the socket 
     client_socket.close()
     
     
@@ -42,7 +43,7 @@ def handle_client(client_socket):
 def main():
 
     port = 6789
-
+     #creating the socket whick is of type tcp(connection oriented)
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     output = subprocess.check_output(["hostname", "-I"]).decode("utf-8").strip()
     host = output.split()[0]
