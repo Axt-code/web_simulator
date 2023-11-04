@@ -113,11 +113,12 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
 
     # Receive and print the response
     byteResponse = b""
-    
+    #setting the timeout with 30 seconds for recieving the data from the server
     client_socket.settimeout(30)
     
     try:
         while True:
+            #recieving the response with 4096 Bytes and storing the message in the data variable
             response_chunk = client_socket.recv(4096)
             if not response_chunk:
                 break
@@ -126,24 +127,26 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
         pass
     
     client_socket.close()
-    
+    #decoding the by byteresponse
     response_text = byteResponse.decode()
-    
+    #it is used to parse the resonse_text as HTML parser
     basehtml = BeautifulSoup(response_text, 'html.parser')
+    #xtracts the <title> tag from the basehtml object and assigns it to the variable title
     title = basehtml.title
     print(f"\nTitle : {title}\n")
    
     
-      # Process the HTTP response
+      #  Process the HTTP response by splitting the responses
     response_parts = byteResponse.split(b'\r\n\r\n')
     
     headers =""
     if len(response_parts) == 2:
+        #headers will contain the HTTP response headers, and script_data will contain the content of a script 
         headers, script_data = response_parts
         
     print("Header : \n" + headers.decode('utf-8')+"\n")
     
-    # handle image
+    # handling the image
     img_tags =basehtml.find_all("img")
     print("Number of img_tags : "+ str(len(img_tags)))
     if len(img_tags)!=0:
@@ -184,11 +187,12 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
         print()
        
    
-   # handle icon
+   # handle icon and shortcut icon
     icon_tags =basehtml.find_all("link", rel="shortcut icon") or basehtml.find_all("link", rel="icon")
     print("Number of icon_tags : "+ str(len(icon_tags)))
     if len(icon_tags)!=0:
          for icon in icon_tags:
+             # extracts the value of the 'href' attribute from an HTML <link>
             icon_src = icon.get('href')
             obj_get(host, port, icon_src, proxy_host, proxy_port)
             print()
@@ -217,10 +221,12 @@ def main():
         proxy_host = sys.argv[4]
         proxy_port = int(sys.argv[5])
        
-
+    #records the current time in seconds
     t1=time.time()
     send_http_request(host, port, path, proxy_host, proxy_port)
+    #records the current time  again in seconds 
     t2=time.time()
+    #total time 
     total_time = t2-t1
     print("Total e2e time = ", total_time )
 
