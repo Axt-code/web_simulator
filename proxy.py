@@ -38,10 +38,6 @@ def handle_client(client_socket):
 
     else:
         print("\nHost header not found in the request.\n")
-        
-    # if not host:
-    #     print("\nError: Invalid URL\n")
-    #     return
     
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
@@ -80,8 +76,9 @@ def handle_client(client_socket):
     
     status_code=""
     
-    if len(response_parts) == 2:
-        headers, script_data = response_parts
+    if len(response_parts) >= 2:
+        headers= response_parts[0]
+        script_data = byteResponse[len(headers)+4:]   
         status_line, *header_lines = headers.decode('utf-8').split('\r\n')
         status_code = status_line.split()[1].encode('utf-8')
         if status_code != b'200':
@@ -92,12 +89,14 @@ def handle_client(client_socket):
    
             
         print(f"status code: {status_code.decode()}\n")
-
+        
         modified_headers = modify_header(headers.decode('utf-8'))
+        
         print(f"Modified header: {modified_headers}")  
+        
         modified_headers = modified_headers.encode()
-
-        modified_response = modified_headers + b"\r\n\r\n" + script_data
+        
+        modified_response = modified_headers + b"\r\n\r\n" + bytes(script_data)
         
         # Send the modified response to the client as bytes
         client_socket.send(modified_response)
@@ -130,8 +129,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
-    
-    
-
-
