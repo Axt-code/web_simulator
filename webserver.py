@@ -28,13 +28,15 @@ def handle_client(client_socket):
         with open(requested_file, 'rb') as f:
             content = f.read()
         response = f"HTTP/1.1 200 OK\r\nContent-Length: {len(content)}\r\nContent-Type: text/html\r\n\r\n{content.decode('utf-8')}"
+        print("File sent successfully!\n") 
     else:
         # File not found, send a 404 response
         response = "HTTP/1.1 404 Not Found\r\n\r\n<h1>File not found<h1>"
+        print("Requested File Not Found!\n") 
 
     # Send the response back to the client
     client_socket.sendall(response.encode())
-    print("\nRequest complete \n\nClosing connection with client.")
+    print("Closing connection with client.\n")
     #Closing the socket 
     client_socket.close()
     
