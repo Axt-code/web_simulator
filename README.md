@@ -73,5 +73,16 @@
 
        python3 client.py cse.iith.ac.in 443 / <Proxy IP> <Proxy port- 6789>
 
+   ## How to set proxy in Browser
+
+   Add your proxy in Network settings in the browser
+
+
+   ![image](https://github.com/Axt-code/ACN-Assigments/assets/40199249/2772357d-7b6c-4e4c-9ed8-4c39740d9dce)
+
+      
+
+
+   
        
  
