@@ -26,9 +26,10 @@
    - `python3 speedyClient.py cse.iith.ac.in 443 / `
 
 ## Server
-   This Python script is a basic HTTP server that listens for incoming client connections, processes HTTP requests, and serves files from the local file system. It handles multiple client connections concurrently using multithreading.  In our case, we have a hello.html file, whenever a client requests for this file, it is served by the server. The client parses this hello.html and displays the output. Our web browser is hosted on port 6789. If the file cannot be located, it will trigger a 404 error. And print requested objects not found.
-1)for Simple web server : Command is 
+
+   This Python script is a basic HTTP server that listens for incoming client connections, processes HTTP requests, and serves files from the local file system. It handles multiple client connections concurrently using multithreading.  In our case, we have a hello.html file, whenever a client requests for this file, it is served by the server. The client parses this hello.html and displays the output. Our web browser is hosted on port 6789. If the file cannot be located, it will trigger a 404 error. And print requested objects not found.for Simple web server and client
    - `python3 webserver.py `
+   - `python3 client.py 192.168.0.207
 
 
 
