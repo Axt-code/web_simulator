@@ -28,3 +28,5 @@
 ## Server
 
 ## Proxy
+   This code implements a simple HTTPproxy server.It listens client connection,forwards their HTTP requeststo target servers ,modifies the server's responses by adding proxy host information to the hearders and sends the modified responses back to the clients.The proxy server can handle multiple client connections concurrently,allowing it to intercept and modify traffic passing through it.to run this we use
+   - `python3 proxy.py`
