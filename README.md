@@ -17,17 +17,17 @@
    Here in this code we are connecting client to the web server or web proxy .
    client send the get request to the server to get the index file .With the help of the index file we can abstract the         Image ,Script and Icons from the index file.For abstacting these Image ,Script and Icons we are sending the TCP Requests 
    to the server.
-   to run the Client               
+                  to run the Client               
    - `python3 client.py cse.iit.ac.in 443 /`
 
 ### SpeedyClient
    Speedy client uses parallel and persistant TCP connections to get the responses very fast. Speedy client take less time to get the responses when compared to the normal client.
-   To run the Speedy client we use 
+                  To run the Speedy client we use 
    - `python3 speedyClient.py cse.iith.ac.in 443 / `
 
 ## Server
 
 ## Proxy
    This code implements a simple HTTPproxy server.It listens client connection,forwards their HTTP requeststo target servers ,modifies the server's responses by adding proxy host information to the hearders and sends the modified responses back to the clients.The proxy server can handle multiple client connections concurrently,allowing it to intercept and modify traffic passing through it.If proxy accepts the request then it will print status code:200 ok,else it will print 404 error.After getting 200 ok status code the header will be modified.
-   To run this we use :
+                  To run this we use :
    - `python3 proxy.py`
