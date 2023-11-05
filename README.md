@@ -14,7 +14,8 @@
     - webserver.py
 
 ## Client
-   Here in this code we are connecting client to the web server or web proxy according to the user's wish 
+   Here in this code we are connecting client to the web server or web proxy .
+   client sen
 
 ### SpeedyClient
    How to run?
