@@ -15,9 +15,10 @@
 
 ## Client
    Here in this code we are connecting client to the web server or web proxy .
-   client send the get request to the server to get the index file .With the help of the index file we can abstract the Image ,Script and Icons from the index file.
+   client send the get request to the server to get the index file .With the help of the index file we can abstract the         Image ,Script and Icons from the index file.For abstacting these Image ,Script and Icons we are sending the TCP Requests.
 
 ### SpeedyClient
+   
    How to run?
    - `python3 speedyClient.py cse.iith.ac.in 443 / `
 
