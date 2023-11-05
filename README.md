@@ -15,6 +15,10 @@
 
 ## Client
 
+### SpeedyClient
+   How to run?
+   - `python3 speedyClient.py cse.iith.ac.in 443 / `
+
 ## Server
 
 ## Proxy
