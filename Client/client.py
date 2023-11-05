@@ -53,7 +53,6 @@ def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
         
         # Process the HTTP response by splitting the responses
         response_parts = response.split(b'\r\n\r\n', 1)
-        #unction to extract the filename from the path and stored in obj_name
         obj_name = os.path.basename(parsed_url.path)
         obj_path = os.path.join('objects', obj_name)
                 
