@@ -20,8 +20,8 @@
 
 ### SpeedyClient
    Speedy client uses parallel and persistant TCP connections to get the responses very fast. Speedy client take less time to get the responses when compared to the normal client.
-   How to run?
-    `python3 speedyClient.py cse.iith.ac.in 443 / `
+   -To run the code we use 
+   - `python3 speedyClient.py cse.iith.ac.in 443 / `
 
 ## Server
 
