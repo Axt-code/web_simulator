@@ -1,5 +1,3 @@
-# ACN-Assigments
-
 ## Folder structure
 
 - Client
