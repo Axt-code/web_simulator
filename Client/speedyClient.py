@@ -24,14 +24,14 @@ def fetch_obj(host, port, url):
     request = f"GET {url} HTTP/1.1\r\nHost: {host}\r\n\r\n"
     
     #Client will send the request to the server by encoding the message
-    print(f"Sending HTTP parallel request to {host}:{port}")
+    print(f"Sending GET request for object {url}")
     client_socket.send(request.encode())
     parsed_url = urllib.parse.urlparse(url)
     
     # Receive and print the response
     byteResponse = b""
      #setting the timeout with 10 seconds for recieving the data from the server
-    client_socket.settimeout(10)
+    client_socket.settimeout(1)
     
     #recieving the response with 4096 Bytes
     try:
@@ -162,7 +162,7 @@ def send_http_request(host, port, path):
     print(f"Total number of obj: {len( object_tags)}")
     #calculates the maximum number of threads
     max_threads = len( object_tags)
-    with ThreadPoolExecutor(max_threads) as executor:
+    with ThreadPoolExecutor() as executor:
         for obj in object_tags:
             executor.submit(fetch_obj, host, port, obj)
         
