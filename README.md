@@ -1,6 +1,6 @@
 # ACN-Assigments
 
-## Folder view
+## Folder structure
 
 - Client
    - client.py
