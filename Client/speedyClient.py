@@ -107,66 +107,81 @@ def send_http_request(host, port, path):
     #Closing the socket
     client_socket.close()
     response_text = byteResponse.decode()
-    basehtml = BeautifulSoup(response_text, 'html.parser')
-    title = basehtml.title
-    print(f"title : {title}")
-    object_tags=[]
     
-    # handle image
-    img_tags =basehtml.find_all("img")
-    print("Number of img_tags : "+ str(len(img_tags)))
-    if len(img_tags)!=0:
-         for img in img_tags:
-             #extracts the 'src' attribute from the image tags
-            img_src = img['src']
-            object_tags.append(img_src)
-            
-    else:
-        print("No img tags found on the web page.")
-        print()
-           
-    # #This line uses BeautifulSoup to find all <a> (anchor) tags and stores in the link_tags
-    link_tags = basehtml.find_all("a")
-    print("Number of link_tags : "+ str(len(link_tags)))
-
-    # searches for all <script> tags in the HTML content parsed by BeautifulSoup and stores them in the script_tags variable
-    script_tags = basehtml.find_all("script")
-    print("Number of script_tags: "+ str(len(script_tags)))
-    if len(script_tags) != 0:
-        for script in script_tags:
-            if 'src' in script.attrs:
-                #if <script> tag has a 'src' attribute then it will be stored in script_src variable
-                script_src = script['src']
-                object_tags.append(script_src)
+    extention =""
+    if(path != "/"):
+            extention = path.split(".")[-1]
+            if(extention!= ""):
+                print(f"File type is: {extention}")
+                name= path.split(".")[0]
+                name = name.split("/")[-1] 
+                filename = name + "." + extention
+                with open(filename, "w", encoding="utf-8") as file:
+                        file.write(response_text)
+                        print(f"File saved as: {filename}")
             else:
                 pass
+    if(path == "/" or extention == "html" or extention == "HTML"):
+        basehtml = BeautifulSoup(response_text, 'html.parser')
+        title = basehtml.title
+        print(f"title : {title}")
+        object_tags=[]
         
-    else:
-        print("No script tags found on the web page.")
-        print()
-       
-   
-   #  searches for <link> elements with the attribute rel set to either "shortcut icon" or "icon" in the HTML content parsed by BeautifulSoup
-    icon_tags =basehtml.find_all("link", rel="shortcut icon") or basehtml.find_all("link", rel="icon")
-    print("Number of icon_tags : "+ str(len(icon_tags)))
-    if len(icon_tags)!=0:
-         for icon in icon_tags:
-            # etrieves the value of the 'href' attribute for the current <link
-            icon_src = icon.get('href')
-            object_tags.append(icon_src)
-    else:
-        print("No icon tags found on the web page.")
-        print()
+        # handle image
+        img_tags =basehtml.find_all("img")
+        print("Number of img_tags : "+ str(len(img_tags)))
+        if len(img_tags)!=0:
+            for img in img_tags:
+                #extracts the 'src' attribute from the image tags
+                img_src = img['src']
+                object_tags.append(img_src)
+                
+        else:
+            print("No img tags found on the web page.")
+            print()
+            
+        # #This line uses BeautifulSoup to find all <a> (anchor) tags and stores in the link_tags
+        link_tags = basehtml.find_all("a")
+        print("Number of link_tags : "+ str(len(link_tags)))
+
+        # searches for all <script> tags in the HTML content parsed by BeautifulSoup and stores them in the script_tags variable
+        script_tags = basehtml.find_all("script")
+        print("Number of script_tags: "+ str(len(script_tags)))
+        if len(script_tags) != 0:
+            for script in script_tags:
+                if 'src' in script.attrs:
+                    #if <script> tag has a 'src' attribute then it will be stored in script_src variable
+                    script_src = script['src']
+                    object_tags.append(script_src)
+                else:
+                    pass
+            
+        else:
+            print("No script tags found on the web page.")
+            print()
         
     
-    print(f"Total number of obj: {len( object_tags)}")
-    #calculates the maximum number of threads
-    max_threads = len( object_tags)
-    with ThreadPoolExecutor() as executor:
-        for obj in object_tags:
-            executor.submit(fetch_obj, host, port, obj)
+    #  searches for <link> elements with the attribute rel set to either "shortcut icon" or "icon" in the HTML content parsed by BeautifulSoup
+        icon_tags =basehtml.find_all("link", rel="shortcut icon") or basehtml.find_all("link", rel="icon")
+        print("Number of icon_tags : "+ str(len(icon_tags)))
+        if len(icon_tags)!=0:
+            for icon in icon_tags:
+                # etrieves the value of the 'href' attribute for the current <link
+                icon_src = icon.get('href')
+                object_tags.append(icon_src)
+        else:
+            print("No icon tags found on the web page.")
+            print()
+            
         
-    print("Parsing is Completed")
+        print(f"Total number of obj: {len( object_tags)}")
+        #calculates the maximum number of threads
+        max_threads = len( object_tags)
+        with ThreadPoolExecutor() as executor:
+            for obj in object_tags:
+                executor.submit(fetch_obj, host, port, obj)
+            
+        print("Parsing is Completed")
 
 def main():
     if len(sys.argv) < 4:
