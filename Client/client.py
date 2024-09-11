@@ -28,7 +28,7 @@ def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
         parsed_url = urllib.parse.urlparse(obj_src)
         path = parsed_url.path if parsed_url.path else '/'
       
-        request = f"GET {path} HTTP/1.1\r\nHost: {host}:{port}\r\n\r\n"
+        request = f"GET http://{host}:{port}/{path} HTTP/1.1\r\nHost: {host}:{port}\r\n\r\n"
             
         # Send the HTTP request by encoding the message
         client_socket.send(request.encode())
@@ -40,7 +40,6 @@ def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
         #recieving the response with 4096 Bytes and storing the message in the data variable
         try:        
             while True:
-               
                 data = client_socket.recv(4096)
                 if not data:
                     break
@@ -53,6 +52,7 @@ def obj_get(host, port, obj_src, proxy_host=None, proxy_port=None):
         
         # Process the HTTP response by splitting the responses
         response_parts = response.split(b'\r\n\r\n', 1)
+        #function to extract the filename from the path and stored in obj_name
         obj_name = os.path.basename(parsed_url.path)
         obj_path = os.path.join('objects', obj_name)
                 
@@ -98,7 +98,9 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
         
     
     # Create an HTTP GET request
-    request = f"GET {path} HTTP/1.1\r\nHost: {host}:{port}\r\n\r\n"
+    request = f"GET http://{host}:{port}/{path} HTTP/1.1\r\nHost: {host}:{port}\r\n\r\n"
+    
+    
         
     # Send the request to the server or proxy
     print(f"Sending HTTP request to {host}:{port}")
@@ -106,7 +108,7 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
 
     # Receive and print the response
     byteResponse = b""
-    #setting the timeout with 30 seconds for recieving the data from the server
+    # setting the timeout with 30 seconds for recieving the data from the server
     client_socket.settimeout(30)
     
     #recieving the response with 4096 Bytes and storing the message in the data variable
@@ -122,78 +124,105 @@ def send_http_request(host, port, path, proxy_host=None, proxy_port=None):
     client_socket.close()
     #decoding the by byteresponse
     response_text = byteResponse.decode()
-    #it is used to parse the resonse_text as HTML parser
-    basehtml = BeautifulSoup(response_text, 'html.parser')
-    title = basehtml.title
-    print(f"\nTitle : {title}\n")
-   
-    
-    #  Process the HTTP response by splitting the responses
     response_parts = byteResponse.split(b'\r\n\r\n')
+
     
-    headers =""
-    if len(response_parts) == 2:
-        #headers will contain the HTTP response headers, and script_data will contain the content of a script 
-        headers, script_data = response_parts
-        
-    if(headers != ""):    
-        print("Header : \n" + headers.decode('utf-8')+"\n")
+    status_code=""
     
-    # handling the image
-    img_tags =basehtml.find_all("img")
-    print("Number of img_tags : "+ str(len(img_tags)))
-    if len(img_tags)!=0:
-         for img in img_tags:
-            # Get the source (src) attribute of the img tag
-            img_src = img['src']
-            obj_get(host, port, img_src, proxy_host, proxy_port)
-            print()
-    else:
-        print("No img tags found on the web page.")
-        print()
-           
-    # handle link
-    link_tags = basehtml.find_all("a")
-    print("Number of link_tags : "+ str(len(link_tags)))
-    if len(link_tags)!=0:
-         for link in link_tags:
-             print(f"Found link: {link}")
-             print()
-   
-    # handle script
-    script_tags = basehtml.find_all("script")
-    print("Number of script_tags: "+ str(len(script_tags)))
-    if len(script_tags) != 0:
-        for script in script_tags:
-            if 'src' in script.attrs:
-                script_src = script['src']
-                print(f"External script source: {script_src}")
-                # Call the script_get function to handle external script files
-                obj_get(host, port, script_src, proxy_host, proxy_port)
-                print()
-            else:
-                pass
+    if len(response_parts) >= 2:
+        headers= response_parts[0]
         
-    else:
-        print("No script tags found on the web page.")
-        print()
-       
-   
-   # handle icon and shortcut icon
-    icon_tags =basehtml.find_all("link", rel="shortcut icon") or basehtml.find_all("link", rel="icon")
-    print("Number of icon_tags : "+ str(len(icon_tags)))
-    if len(icon_tags)!=0:
-         for icon in icon_tags:
-             # extracts the value of the 'href' attribute from an HTML <link>
-            icon_src = icon.get('href')
-            obj_get(host, port, icon_src, proxy_host, proxy_port)
+        status_line, *header_lines = headers.decode('utf-8').split('\r\n')
+        status_code = status_line.split()[1].encode('utf-8')
+        if status_code != b'200':
+            error_message = f"Error: Received status code {str(status_code)}"
+            print(error_message)
             print()
+        else:
+            extention =""
+            if(path != "/"):
+                extention = path.split(".")[-1]
+                if(extention!= ""):
+                    print(f"\nFile type is: {extention}")
+                    name= path.split(".")[0]
+                    name = name.split("/")[-1] 
+                    filename = name + "." + extention
+                    script_data = byteResponse[len(headers)+4:]  
+                    with open(filename, "w", encoding="utf-8") as file:
+                            file.write(script_data.decode())
+                            print(f"File saved as: {filename}\n")
+                else:
+                    pass
             
-    else:
-        print("No icon tags found on the web page.")
-        print()
-        
-    print("Parsing is Completed")
+            if(path == "/" or extention == "html" or extention == "HTML"):        
+                #it is used to parse the resonse_text as HTML parser
+                basehtml = BeautifulSoup(response_text, 'html.parser')
+                title = basehtml.title
+                print(f"\nTitle : {title}\n")
+                response_parts = byteResponse.split(b'\r\n\r\n')
+                
+                headers =""
+                if len(response_parts) == 2:
+                    headers, script_data = response_parts
+                    
+                if(headers != ""):    
+                    print("Header : \n" + headers.decode('utf-8')+"\n")
+                
+                # handling the image
+                img_tags =basehtml.find_all("img")
+                print("Number of img_tags : "+ str(len(img_tags)))
+                if len(img_tags)!=0:
+                    for img in img_tags:
+                        # Get the source (src) attribute of the img tag
+                        img_src = img['src']
+                        obj_get(host, port, img_src, proxy_host, proxy_port)
+                        print()
+                else:
+                    print("No img tags found on the web page.")
+                    print()
+                    
+                # handle link
+                link_tags = basehtml.find_all("a")
+                print("Number of link_tags : "+ str(len(link_tags)))
+                if len(link_tags)!=0:
+                    for link in link_tags:
+                        print(f"Found link: {link}")
+                        print()
+
+                # handle script
+                script_tags = basehtml.find_all("script")
+                print("Number of script_tags: "+ str(len(script_tags)))
+                if len(script_tags) != 0:
+                    for script in script_tags:
+                        if 'src' in script.attrs:
+                            script_src = script['src']
+                            print(f"External script source: {script_src}")
+                            # Call the script_get function to handle external script files
+                            obj_get(host, port, script_src, proxy_host, proxy_port)
+                            print()
+                        else:
+                            pass
+                    
+                else:
+                    print("No script tags found on the web page.")
+                    print()
+                
+
+            # handle icon and shortcut icon
+                icon_tags =basehtml.find_all("link", rel="shortcut icon") or basehtml.find_all("link", rel="icon")
+                print("Number of icon_tags : "+ str(len(icon_tags)))
+                if len(icon_tags)!=0:
+                    for icon in icon_tags:
+                        # extracts the value of the 'href' attribute from an HTML <link>
+                        icon_src = icon.get('href')
+                        obj_get(host, port, icon_src, proxy_host, proxy_port)
+                        print()
+                        
+                else:
+                    print("No icon tags found on the web page.")
+                    print()
+                
+            print("Parsing is Completed")
 
 def main():
     
