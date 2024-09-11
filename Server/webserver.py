@@ -10,11 +10,19 @@ def handle_client(client_socket):
     request_lines = request_data.split('\n')
     request_line = request_lines[0]
     parts = request_line.split()
+    print(f'Requested file path: {request_data}')
+    
     if len(parts) > 1:
-        file_path = parts[1]
+        if parts[1].startswith("http://"):
+            # Remove "http://" and everything before the file path
+            file_path = parts[1].split("/", 3)[-1]
+        elif parts[1].startswith("/"):
+            file_path = parts[1][1:]
+        else:
+            file_path = parts[1]
     else:
         client_socket.close()
-        response = "HTTP/1.1 400 Bad Request\r\n\r\n<h1>Bad Request<h1>"
+        response = "HTTP/1.1 400 Bad Request\r\n\r\n<h1Bad Request</h1>"
         return
     print(f'Requested file path: {file_path}')
     
@@ -28,15 +36,15 @@ def handle_client(client_socket):
         with open(requested_file, 'rb') as f:
             content = f.read()
         response = f"HTTP/1.1 200 OK\r\nContent-Length: {len(content)}\r\nContent-Type: text/html\r\n\r\n{content.decode('utf-8')}"
-        print("File sent successfully!\n") 
+        
     else:
         # File not found, send a 404 response
-        response = "HTTP/1.1 404 Not Found\r\n\r\n<h1>File not found<h1>"
-        print("Requested File Not Found!\n") 
+        print("")
+        response = "HTTP/1.1 404 Not Found\r\n\r\n<h1>File not found</h1>"
 
     # Send the response back to the client
     client_socket.sendall(response.encode())
-    print("Closing connection with client.\n")
+    print("\nClosing connection with client.\n")
     #Closing the socket 
     client_socket.close()
     
